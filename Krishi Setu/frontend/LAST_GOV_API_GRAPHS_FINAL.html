@@ -4883,6 +4883,15 @@ setTimeout(updateLiveTickerClock, 500);
 
           <button id="authPrimaryBtn" class="btn primary" style="width:100%;margin-top:18px;min-height:48px" onclick="performAuth()">🚀 <span data-i18n="auth_signin_btn">Sign In</span></button>
 
+          <div class="quick-demo-strip" style="margin-top:16px;padding:12px 14px;border-radius:12px;background:#f0fdf4;border:1px dashed #86efac;text-align:center">
+            <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px">⚡ Quick Demo Login (One-click Access)</div>
+            <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <button type="button" class="btn outline btn-sm" style="background:#fff" onclick="demoLogin('farmer')" title="Explore as Verified Farmer">👨‍🌾 Farmer Demo</button>
+              <button type="button" class="btn outline btn-sm" style="background:#fff" onclick="demoLogin('buyer')" title="Explore as Enterprise Buyer">🏪 Buyer Demo</button>
+              <button type="button" class="btn outline btn-sm" style="background:#fff" onclick="demoLogin('supervisor')" title="Explore as APMC Supervisor">🛡️ Supervisor Demo</button>
+            </div>
+          </div>
+
           <div id="authBackToSignInWrap" style="display:none;text-align:center;margin-top:14px">
             <button type="button" class="btn outline btn-sm" onclick="setAuthMode('signin')" style="display:inline-flex;align-items:center;gap:6px">← Back to Sign In</button>
           </div>
@@ -6917,7 +6926,8 @@ const supabaseClient = (SUPABASE_KEY_VALID && window.supabase?.createClient)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
   : null;
 const SUPABASE_READY = !!supabaseClient;
-const DEMO_MODE = !SUPABASE_KEY_VALID;
+let DEMO_MODE = !SUPABASE_KEY_VALID;
+window.DEMO_MODE = DEMO_MODE;
 
 const KRISHISETU_APP_URL = (window.KRISHISETU_APP_URL ||
   (window.location.protocol === 'file:' ? 'http://localhost:3000/' : window.location.origin + window.location.pathname))
@@ -7552,6 +7562,123 @@ async function loginAccount(user, isNewUser=false){
   }
 }
 
+async function executeDemoAuth(email, password, mode){
+  await new Promise(r => setTimeout(r, 300));
+  if(mode === 'create'){
+    if(!loginRole){ showAuthError('Please select whether you are a Seller / Farmer or Buyer first.'); return; }
+    const name = (document.getElementById('loginName')?.value || '').trim();
+    const mobile = (document.getElementById('loginMobile')?.value || '').replace(/\D/g,'');
+    if(!name){ showAuthError('Please enter your full name.'); return; }
+    if(!/^\d{10}$/.test(mobile)){ showAuthError('Please enter a valid 10-digit mobile number.'); return; }
+    
+    const demoUsers = JSON.parse(localStorage.getItem('ks_demo_users') || '{}');
+    if(demoUsers[email]){ showAuthError('An account with this email already exists. Please Sign In.'); return; }
+    demoUsers[email] = { email, password, name, mobile, role: loginRole };
+    localStorage.setItem('ks_demo_users', JSON.stringify(demoUsers));
+    localStorage.setItem('krishiSetuRole', loginRole);
+    localStorage.setItem('krishiSetuSavedIdentity', JSON.stringify({email, name, mobile}));
+    
+    const successBox = document.getElementById('authInlineError');
+    if(successBox){
+      successBox.style.display = 'block';
+      successBox.style.background = '#ecfdf5';
+      successBox.style.borderColor = '#bbf7d0';
+      successBox.style.color = '#166534';
+      successBox.innerHTML = '✅ <b>Account created successfully!</b> You can now sign in.';
+    }
+    toast('Account created! Now sign in.', '🎉');
+    setAuthMode('signin');
+    const em = document.getElementById('loginEmail'); if(em) em.value = email;
+    const pw = document.getElementById('loginPassword'); if(pw) pw.value = '';
+  } else {
+    const demoUsers = JSON.parse(localStorage.getItem('ks_demo_users') || '{}');
+    let inferredRole = currentRole || 'farmer';
+    let inferredName = email.split('@')[0];
+    if (email.includes('supervisor') || email.includes('admin') || email.includes('pooja')) {
+      inferredRole = 'supervisor';
+      inferredName = 'Pooja Kulkarni (Supervisor)';
+    } else if (email.includes('buyer') || email.includes('freshgro') || email.includes('procurement')) {
+      inferredRole = 'buyer';
+      inferredName = 'FreshGro Retail Solutions';
+    } else if (email.includes('farmer') || email.includes('ramesh')) {
+      inferredRole = 'farmer';
+      inferredName = 'Ramesh Patil';
+    }
+    
+    const demoUser = demoUsers[email] || { email, name: inferredName, mobile: '9822045678', role: inferredRole, password };
+    if(demoUsers[email] && demoUser.password !== password){ showAuthError('Incorrect password. Please try again.'); return; }
+    
+    currentRole = demoUser.role || inferredRole;
+    loginRole = currentRole;
+    localStorage.setItem('krishiSetuRole', currentRole);
+    
+    let mockUser;
+    if(currentRole === 'supervisor'){
+      mockUser = {
+        id: 'demo_' + email.replace(/[^a-z0-9]/gi,'_'),
+        email: demoUser.email,
+        user_metadata: {
+          full_name: demoUser.name,
+          role: 'supervisor',
+          mobile: demoUser.mobile,
+          profile: { department: 'Compliance & Field Audits Desk' }
+        }
+      };
+    } else if(currentRole === 'buyer'){
+      mockUser = {
+        id: 'demo_' + email.replace(/[^a-z0-9]/gi,'_'),
+        email: demoUser.email,
+        user_metadata: {
+          full_name: demoUser.name,
+          role: 'buyer',
+          mobile: demoUser.mobile,
+          profile: {
+            business: demoUser.name,
+            buyerType: 'Retail Supermarket Chain',
+            buyerCity: 'Navi Mumbai',
+            buyerState: 'Maharashtra',
+            buyerDistrict: 'Thane',
+            buyerPincode: '400703',
+            demandCrops: 'Onion, Tomato, Potato, Grapes',
+            demandQty: 600,
+            preferredMarkets: ['Vashi APMC (Navi Mumbai)', 'Nashik APMC']
+          }
+        }
+      };
+    } else {
+      mockUser = {
+        id: 'demo_' + email.replace(/[^a-z0-9]/gi,'_'),
+        email: demoUser.email,
+        user_metadata: {
+          full_name: demoUser.name,
+          role: 'farmer',
+          mobile: demoUser.mobile,
+          profile: {
+            farmName: demoUser.name + ' Farms',
+            village: 'Dindori',
+            state: 'Maharashtra',
+            district: 'Nashik',
+            pincode: '422202',
+            crops: 'Onion, Tomato, Grapes, Soybean',
+            storage: 'Warehouse / Cold Storage',
+            preferredMarkets: ['Nashik APMC', 'Lasalgaon APMC', 'Pimpalgaon APMC']
+          }
+        }
+      };
+    }
+
+    localStorage.setItem('krishiSetuDemoLoggedIn', '1');
+    localStorage.setItem('krishiSetuSavedIdentity', JSON.stringify({
+      email: mockUser.email,
+      name: mockUser.user_metadata.full_name,
+      mobile: mockUser.user_metadata.mobile
+    }));
+    await loginAccount(mockUser, false);
+    clearAuthError();
+    toast(`Signed in as ${currentRole.toUpperCase()} (${mockUser.user_metadata.full_name}).`, '🔐');
+  }
+}
+
 async function performAuth(){
   if(isLoggedIn){ showHome(); return; }
   clearAuthError();
@@ -7579,53 +7706,7 @@ async function performAuth(){
 
   if(DEMO_MODE){
     try{
-      await new Promise(r => setTimeout(r, 400));
-      if(mode === 'create'){
-        if(!loginRole){ showAuthError('Please select whether you are a Seller / Farmer or Buyer first.'); return; }
-        const name = (document.getElementById('loginName')?.value || '').trim();
-        const mobile = (document.getElementById('loginMobile')?.value || '').replace(/\D/g,'');
-        if(!name){ showAuthError('Please enter your full name.'); return; }
-        if(!/^\d{10}$/.test(mobile)){ showAuthError('Please enter a valid 10-digit mobile number.'); return; }
-        
-        const demoUsers = JSON.parse(localStorage.getItem('ks_demo_users') || '{}');
-        if(demoUsers[email]){ showAuthError('An account with this email already exists. Please Sign In.'); return; }
-        demoUsers[email] = { email, password, name, mobile, role: loginRole };
-        localStorage.setItem('ks_demo_users', JSON.stringify(demoUsers));
-        localStorage.setItem('krishiSetuRole', loginRole);
-        localStorage.setItem('krishiSetuSavedIdentity', JSON.stringify({email, name, mobile}));
-        
-        const successBox = document.getElementById('authInlineError');
-        if(successBox){
-          successBox.style.display = 'block';
-          successBox.style.background = '#ecfdf5';
-          successBox.style.borderColor = '#bbf7d0';
-          successBox.style.color = '#166534';
-          successBox.innerHTML = '✅ <b>Account created successfully!</b> You can now sign in.';
-        }
-        toast('Account created! Now sign in.', '🎉');
-        setAuthMode('signin');
-        const em = document.getElementById('loginEmail'); if(em) em.value = email;
-        const pw = document.getElementById('loginPassword'); if(pw) pw.value = '';
-      } else {
-        const demoUsers = JSON.parse(localStorage.getItem('ks_demo_users') || '{}');
-        let inferredRole = currentRole || 'farmer';
-        let inferredName = email.split('@')[0];
-        if (email.includes('supervisor')) { inferredRole = 'supervisor'; inferredName = 'Pooja Kulkarni (Supervisor)'; }
-        else if (email.includes('admin')) { inferredRole = 'supervisor'; inferredName = 'Pooja Kulkarni (Supervisor)'; }
-        
-        const demoUser = demoUsers[email] || { email, name: inferredName, mobile: '9822045678', role: inferredRole, password };
-        if(demoUsers[email] && demoUser.password !== password){ showAuthError('Incorrect password. Please try again.'); return; }
-        localStorage.setItem('krishiSetuRole', demoUser.role || 'farmer');
-        const mockUser = {
-          id: 'demo_' + email.replace(/[^a-z0-9]/gi,'_'),
-          email: demoUser.email,
-          user_metadata: { full_name: demoUser.name, role: demoUser.role, mobile: demoUser.mobile }
-        };
-        localStorage.setItem('krishiSetuDemoLoggedIn', '1');
-        await loginAccount(mockUser, false);
-        clearAuthError();
-        toast(`Signed in as ${demoUser.role.toUpperCase()} (${demoUser.name}).`, '🔐');
-      }
+      await executeDemoAuth(email, password, mode);
     }catch(e){
       showAuthError('Login failed: ' + e.message);
     }finally{
@@ -7734,14 +7815,45 @@ async function performAuth(){
     }
 
     const {data, error} = await supabaseClient.auth.signInWithPassword({email, password});
-    if(error){ showAuthError(formatSupabaseError(error)); return; }
+    // If the error is a network/fetch failure, fall back to offline demo mode
+    if(error){
+      const eMsg = String(error?.message || '');
+      const isNetworkErr = /network|timeout|fetch|failed to fetch|ERR_/i.test(eMsg);
+      if(isNetworkErr){
+        console.warn('[KrishiSetu] Supabase unreachable (sign-in error). Falling back to offline demo mode.', error);
+        DEMO_MODE = true;
+        window.DEMO_MODE = true;
+        const demoModeBanner = document.getElementById('demoModeBanner');
+        if(demoModeBanner) demoModeBanner.style.display = 'block';
+        await executeDemoAuth(email, password, mode);
+        return;
+      }
+      showAuthError(formatSupabaseError(error));
+      return;
+    }
     if(!data?.user){ showAuthError('Sign in failed. Please check your credentials.'); return; }
 
     clearAuthError();
     await loginAccount(data.user, false);
     toast(`Signed in as ${currentRole==='farmer'?'Seller / Farmer':'Buyer'}.`, '🔐');
   }catch(e){
-    showAuthError(formatSupabaseError(e));
+    // Catch any thrown exceptions (timeout, CORS, etc.) and fall back to demo mode
+    const errMsg = String(e?.message || '');
+    const isNetworkErr = /network|timeout|fetch|ERR_|ECONNREFUSED/i.test(errMsg);
+    if(isNetworkErr && mode !== 'create'){
+      console.warn('[KrishiSetu] Supabase unreachable (exception). Falling back to offline demo mode.', e);
+      DEMO_MODE = true;
+      window.DEMO_MODE = true;
+      const demoModeBanner = document.getElementById('demoModeBanner');
+      if(demoModeBanner) demoModeBanner.style.display = 'block';
+      try{
+        await executeDemoAuth(email, password, mode);
+      }catch(de){
+        showAuthError('Sign-in failed in offline mode: ' + de.message);
+      }
+    } else {
+      showAuthError(formatSupabaseError(e));
+    }
   }finally{
     if(btn){ btn.disabled = false; btn.innerHTML = oldBtnHtml || '🚀 Sign In'; }
   }
