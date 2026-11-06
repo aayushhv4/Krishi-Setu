@@ -36,13 +36,24 @@
 
   /* Single source of truth for the platform destination (js/data.js).
      The ?intent=login param tells the app to show its existing login
-     screen for guests (authenticated visitors skip it automatically). */
+     screen for guests (authenticated visitors skip it automatically).
+     When running locally (file://, localhost, 127.0.0.1, or direct static paths),
+     we navigate directly to the physical application file so the button works
+     in standard local web servers (Python, Node, Live Server) and offline. */
   function platformUrl() {
+    var isLocal = typeof window !== 'undefined' && (
+      window.location.protocol === 'file:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '' ||
+      window.location.pathname.indexOf('government-version') !== -1
+    );
+    if (isLocal) {
+      return '../../LAST_GOV_API_GRAPHS_FINAL.html';
+    }
     var p = (window.KS && KS.platformUrl) || '/platform/';
-    /* Ensure a normalized route with a trailing slash, so the
-       ?intent=login query param is a query string and never
-       collides with the /platform path segment on Vercel. */
     if (typeof p !== 'string') p = '/platform/';
+    if (p.endsWith('.html')) return p;
     return p.endsWith('/') ? p : p + '/';
   }
   function platformHref(authed) {
@@ -58,7 +69,7 @@
 
   function collectLinks() {
     links = Array.prototype.slice.call(
-      document.querySelectorAll('a[href*="LAST_GOV_API_GRAPHS_FINAL.html"]')
+      document.querySelectorAll('a[data-i18n-authed], a[href*="LAST_GOV_API_GRAPHS_FINAL.html"], a[href*="/platform/"]')
     );
     links.forEach(function (a) {
       if (!a.dataset.defaultLabel) a.dataset.defaultLabel = a.textContent.trim();

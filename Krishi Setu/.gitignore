@@ -24,6 +24,11 @@ backup_before_functionality_audit/
 backup_before_scope_fix_194146.html
 Krishi Setu UI UX Backup/
 Krishi Setu Structure Backup/
+*.zip
+*.zip'
+*'*.zip'*
+*.backup*
+*.backup-*
 
 # Tool artifacts
 .freebuff/

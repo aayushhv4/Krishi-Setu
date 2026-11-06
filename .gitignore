@@ -24,6 +24,11 @@ Krishi Setu Before WhatsApp Beta/
 Krishi Setu Structure Backup/
 Krishi Setu Before WhatsApp Role Behavior/
 Krishi Setu Before Final Deployment Prep/
+*.zip
+*.zip'
+*'*.zip'*
+*.backup*
+*.backup-*
 
 # Tool artifacts
 .freebuff/
