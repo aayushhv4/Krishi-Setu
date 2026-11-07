@@ -27,7 +27,7 @@
   /* Same Supabase project as the application dashboard. */
   var CONFIG = {
     supabaseUrl: 'https://btsmeozqervgndaejbcc.supabase.co',
-    supabaseAnonKey: (typeof window !== 'undefined' && (window.SUPABASE_PUBLISHABLE_KEY || window.SUPABASE_ANON_KEY)) || '',
+    supabaseAnonKey: 'sb_publishable_ELC_2QyBvO0QwAWvzPlx9Q_LsALkSLY',
     supabaseCdn: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
   };
 
