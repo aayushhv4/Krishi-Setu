@@ -4715,7 +4715,7 @@ setTimeout(updateLiveTickerClock, 500);
   <div class="auth-first-wrap">
     <div class="auth-hero">
       <div>
-        <div class="auth-hero-brand"><div class="auth-hero-mark">🌱</div><div><b style="font-size:22px">KrishiSetu</b><div style="font-size:11px;opacity:.78">Farm. Connect. Prosper.</div></div></div>
+        <div class="auth-hero-brand" onclick="goPublicHome()" style="cursor:pointer" title="Return to Krishi Setu Public Homepage"><div class="auth-hero-mark">🌱</div><div><b style="font-size:22px">KrishiSetu</b><div style="font-size:11px;opacity:.78">Farm. Connect. Prosper.</div></div></div>
         <h1>Sell smarter.<br>Earn with confidence.</h1>
         <p>Compare government mandi prices, direct buyer bids, logistics and net take-home realization — all in one unified agricultural OS.</p>
         <div class="auth-benefits">
@@ -4898,6 +4898,9 @@ setTimeout(updateLiveTickerClock, 500);
 
           <div class="auth-security-row"><span>🔒 Supabase Cloud Auth</span><span>🛡️ Role Enforced</span><span>☁️ Automatic Sync</span></div>
           <div class="login-note" data-i18n="auth_demo_note">Authentication is handled securely by Supabase. Passwords are never stored in browser storage.</div>
+          <div style="text-align:center;margin-top:14px">
+            <a href="javascript:void(0)" onclick="goPublicHome()" id="returnPublicHomeLink" style="color:#15803d;font-size:13px;text-decoration:none;font-weight:600">← Return to Public Homepage</a>
+          </div>
         </div>
       </div>
     </div>

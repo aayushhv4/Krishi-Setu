@@ -38,17 +38,17 @@
      The ?intent=login param tells the app to show its existing login
      screen for guests (authenticated visitors skip it automatically).
      When running locally (file://, localhost, 127.0.0.1, or direct static paths),
-     we navigate directly to the physical application file so the button works
-     in standard local web servers (Python, Node, Live Server) and offline. */
-  function platformUrl() {
-    var isLocal = typeof window !== 'undefined' && (
+     we navigate directly to the physical application file with ?intent=login so the
+     button works reliably in standard local web servers and offline. */
+  function isLocalEnv() {
+    return typeof window !== 'undefined' && (
       window.location.protocol === 'file:' ||
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === '' ||
-      window.location.pathname.indexOf('government-version') !== -1
+      (window.location.pathname && window.location.pathname.indexOf('government-version') !== -1)
     );
-    if (isLocal) {
+  }
+
+  function platformUrl() {
+    if (isLocalEnv()) {
       return '../../LAST_GOV_API_GRAPHS_FINAL.html';
     }
     var p = (window.KS && KS.platformUrl) || '/platform/';
@@ -56,11 +56,13 @@
     if (p.endsWith('.html')) return p;
     return p.endsWith('/') ? p : p + '/';
   }
+
   function platformHref(authed) {
-    /* Authenticated visitors do NOT carry ?intent=login: the app's
-       stored-session boot goes straight to the dashboard (and its
-       pre-paint guard keeps the login screen from flashing). Guests
-       need the intent param so the app shows its existing login. */
+    /* For local development, always navigate directly to the application file with intent=login */
+    if (isLocalEnv()) {
+      return '../../LAST_GOV_API_GRAPHS_FINAL.html?intent=login';
+    }
+    /* Production (Vercel): authenticated visitors go directly to /platform/; guests receive ?intent=login */
     if (authed) return platformUrl();
     var base = platformUrl();
     var sep = base.indexOf('?') === -1 ? '?' : '&';
@@ -73,6 +75,15 @@
     );
     links.forEach(function (a) {
       if (!a.dataset.defaultLabel) a.dataset.defaultLabel = a.textContent.trim();
+      if (!a.dataset.authNavAttached) {
+        a.dataset.authNavAttached = 'true';
+        a.addEventListener('click', function (e) {
+          if (isLocalEnv()) {
+            e.preventDefault();
+            window.location.href = platformHref(a.dataset.authState === 'in');
+          }
+        });
+      }
     });
   }
 
