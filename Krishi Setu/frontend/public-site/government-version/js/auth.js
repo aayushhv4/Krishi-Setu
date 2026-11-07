@@ -26,8 +26,8 @@
 
   /* Same Supabase project as the application dashboard. */
   var CONFIG = {
-    supabaseUrl: 'https://lryhcszcmhlrzrbrsces.supabase.co',
-    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyeWhjc3pjbWhscnpyYnJzY2VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3MjczMjIsImV4cCI6MjEwMzMwMzMyMn0.n-yN_Ag2o_9OccmwTtrjgQ4gGX0YM2P50M4W0lI-4GA',
+    supabaseUrl: 'https://btsmeozqervgndaejbcc.supabase.co',
+    supabaseAnonKey: (typeof window !== 'undefined' && (window.SUPABASE_PUBLISHABLE_KEY || window.SUPABASE_ANON_KEY)) || 'sb_publishable_btsmeozqervgndaejbcc',
     supabaseCdn: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
   };
 

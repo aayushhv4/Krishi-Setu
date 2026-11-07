@@ -6918,10 +6918,11 @@ function changeLanguage(lang) {
 /* =========================================================================
    5. APPLICATION STATE & CONFIGURATION
    ========================================================================= */
-const SUPABASE_URL = "https://lryhcszcmhlrzrbrsces.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyeWhjc3pjbWhscnpyYnJzY2VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3MjczMjIsImV4cCI6MjEwMzMwMzMyMn0.n-yN_Ag2o_9OccmwTtrjgQ4gGX0YM2P50M4W0lI-4GA";
+const SUPABASE_URL = "https://btsmeozqervgndaejbcc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = (typeof window !== 'undefined' && (window.SUPABASE_PUBLISHABLE_KEY || window.SUPABASE_ANON_KEY)) || "sb_publishable_btsmeozqervgndaejbcc";
 
-const SUPABASE_KEY_VALID = typeof SUPABASE_PUBLISHABLE_KEY === 'string' && SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ');
+const SUPABASE_KEY_VALID = typeof SUPABASE_PUBLISHABLE_KEY === 'string' &&
+  (SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ') || SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_') || SUPABASE_PUBLISHABLE_KEY.startsWith('sbp_'));
 const supabaseClient = (SUPABASE_KEY_VALID && window.supabase?.createClient)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
   : null;
