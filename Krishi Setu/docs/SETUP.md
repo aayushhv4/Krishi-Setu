@@ -32,7 +32,6 @@ Open (or serve) these from the project root:
 
 | What | Path |
 |---|---|
-| Product entry point (redirects to public homepage) | `index.html` at the workspace root, **or** |
 | Public homepage (Government version) | `frontend/public-site/government-version/index.html` |
 | Premium design direction (comparison) | `frontend/public-site/premium-version/index.html` |
 | Authenticated platform (dashboard + login) | `frontend/LAST_GOV_API_GRAPHS_FINAL.html` |
@@ -55,7 +54,7 @@ fill real values **outside** the repository (never commit `.env`):
 | Variable | Used by | Notes |
 |---|---|---|
 | `SUPABASE_URL` | Application / public site | Must match the app's embedded config |
-| `SUPABASE_ANON_KEY` | Application / public site | Publishable key — safe to embed, never the service-role key |
+| `SUPABASE_PUBLISHABLE_KEY` | Application / public site | Publishable / anon key (safe in browser; alias: `SUPABASE_ANON_KEY`) |
 | `GOV_API_KEY` | `refresh-gov-feed` edge function | data.gov.in secret, set as a Supabase function secret |
 | `CHROME_PATH` | Test suite only | Path to Chrome when not in the default location |
 

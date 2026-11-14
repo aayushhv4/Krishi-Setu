@@ -33,3 +33,7 @@ Krishi Setu Before Final Deployment Prep/
 # Tool artifacts
 .freebuff/
 .playtest/
+
+# Scratch & temporary tests
+tests/scratch_test_*.js
+tests/verify_static_local.js

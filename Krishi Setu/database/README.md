@@ -1,33 +1,13 @@
-# Krishi Setu — Database
+# Database Migrations and Schemas
 
-This folder holds the **raw working copies** of the Supabase/PostgreSQL schema scripts used while building the app.
+This directory previously housed legacy exploratory SQL exports.
 
-## Files (in execution order for a fresh setup)
+All canonical, version-controlled database migrations are now located in:
+`backend/supabase/migrations/`
 
-| File | Contents |
-| --- | --- |
-| `database.txt` | STEP 0 demo auth users + the main application schema (tables for profiles, inventory, lots, offers, orders, payments) |
-| `database part 2.txt` | Core Supabase schema — extensions (pgcrypto), tables, and RLS foundations |
-| `database part 3.txt` | Repair / migration script — removes the failing `auth.users → profiles` trigger that can surface as “Database error saving new user” |
-| `database 4.txt` | Admin & Supervisor governance schema (registries, investigations, audit, alerts) |
-| `database 5.txt` | `gov_mandi_feed_cache` table (single-row JSONB cache for the government mandi price feed) |
-
-## Relationship to `backend/supabase/migrations/`
-
-The **authoritative, versioned** schema lives in `backend/supabase/migrations/001–005`, distilled from these raw scripts and ordered so they apply cleanly with the Supabase CLI (`supabase db push`). Use those for deployment:
-
-```
-backend/supabase/migrations/001_schema.sql
-backend/supabase/migrations/002_admin_governance.sql
-backend/supabase/migrations/003_repair_profiles.sql
-backend/supabase/migrations/004_gov_feed_cache.sql
-backend/supabase/migrations/005_seed_demo_data.sql
-```
-
-These raw exports are kept for reference and manual SQL-Editor execution, not for active development.
-
-## Notes
-
-- Supabase **Auth** is the source of truth for users — no passwords are ever stored in application tables.
-- Row Level Security (RLS) is used throughout; the edge function `refresh-gov-feed` writes to `gov_mandi_feed_cache` with a service role.
-- Do not edit SQL here without updating the matching migration in `backend/supabase/migrations/`.
+### Migration Order
+1. `001_schema.sql` — Core database tables, triggers, and baseline RLS policies
+2. `002_admin_governance.sql` — Administrative functions, verification flags, and governance policies
+3. `003_repair_profiles.sql` — Profile table repairs and self-heal triggers
+4. `004_gov_feed_cache.sql` — Government weather and price feed cache structures
+5. `005_seed_demo_data.sql` — Sanitized demo and testing fixtures (with non-identifiable test data)

@@ -40,6 +40,19 @@ node integration/lang-switcher.js
 # WhatsApp Beta: every guided flow at mobile + desktop, light + dark.
 node integration/whatsapp-demo.js
 
+# Final authentication flow check: Supabase auth state, session handling
+node integration/final-auth-check.js
+
+# Theme & login regression verification
+# Note: Section 5 makes live auth test calls against the configured Supabase endpoint
+node integration/theme-login-fix.js
+
+# Public site navigation and deep link verification
+node verify_navigation.js
+
+# Static server fix and path verification
+node test_fix_verification.js
+
 # Deployment QA over HTTP: root redirect, all public pages, dead-link crawl,
 # app + WhatsApp Beta + premium pages, mobile overflow. Point at the live
 # site after deploy: KS_BASE_URL=https://your-domain node integration/deploy-qa.js

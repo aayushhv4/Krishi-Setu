@@ -79,15 +79,20 @@ Krishi Setu/
 ├── backend/
 │   └── supabase/                        # migrations (001–005), edge functions, README
 ├── database/
-│   └── schema/                          # raw SQL schema exports (source of migrations)
+│   └── README.md                        # database migration reference
 ├── docs/                                # architecture, API, setup, release + issue reports, SIH deck
 ├── tests/                               # headless integration checks (Puppeteer)
 ├── archive/                             # archived dev tools / orphaned files (not part of product)
 ├── .env.example                         # environment variable names (no secrets)
 ├── .gitignore
+├── CONTRIBUTING.md                      # local setup, testing, and contribution guide
+├── SECURITY.md                          # security policy and credential disclosure guidelines
 └── README.md
 ```
 
-See `docs/README.md` for the documentation index, `docs/ARCHITECTURE.md` for a deep dive, `docs/API.md` for the data contract, and `docs/SETUP.md` for environment and deployment steps.
+## Known Limitations
 
-See `docs/ARCHITECTURE.md` for a deep dive, `docs/API.md` for the data contract, and `docs/SETUP.md` for environment and deployment steps.
+- **Email Confirmation & Profile Synchronization:** If email confirmation is enabled on your Supabase instance, profile rows are automatically provisioned and synchronized on the user's first login. A manual fallback "Retry Save Profile" action is also accessible in the UI profile section.
+- **Client Configuration:** The publishable anon key is intentionally client-side and secured via PostgreSQL Row Level Security (RLS) policies. For independent production deployments, replace the project URL and publishable key with your own dedicated Supabase instance credentials.
+
+See `docs/README.md` for the documentation index, `docs/ARCHITECTURE.md` for a deep dive, `docs/API.md` for the data contract, and `docs/SETUP.md` for environment and deployment steps.

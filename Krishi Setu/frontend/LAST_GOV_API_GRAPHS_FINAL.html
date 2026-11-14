@@ -7498,15 +7498,34 @@ async function loginAccount(user, isNewUser=false){
 
   const metadata = user.user_metadata || {};
   let userRole = metadata.role || 'farmer';
-  if(userRole === 'admin') userRole = 'supervisor';
-  if(!['farmer', 'buyer', 'supervisor', 'admin'].includes(userRole)){
+  // Security: only farmer or buyer may be populated from unauthenticated metadata/defaults.
+  // Administrative or supervisor roles must never be self-assigned via signup metadata.
+  if(!['farmer', 'buyer'].includes(userRole)){
     userRole = 'farmer';
   }
   
   let profile = null;
   try{
     profile = await loadSupabaseProfile(user.id);
-    if(profile?.role && ['farmer', 'buyer', 'supervisor', 'admin'].includes(profile.role)) userRole = profile.role === 'admin' ? 'supervisor' : profile.role;
+    if(!profile && supabaseClient && !user.id.startsWith('demo_')){
+      try{
+        const ensureRes = await ensureSupabaseProfile({
+          id: user.id,
+          role: userRole,
+          name: metadata.full_name || metadata.name || user.email || '',
+          mobile: metadata.mobile || '',
+          email: user.email || '',
+          profile: {}
+        });
+        if(ensureRes?.ok && ensureRes?.data){
+          profile = ensureRes.data;
+        }
+      }catch(errEnsure){}
+    }
+    // Only accept roles already stored in the verified database profile
+    if(profile?.role && ['farmer', 'buyer', 'supervisor', 'admin'].includes(profile.role)){
+      userRole = profile.role === 'admin' ? 'supervisor' : profile.role;
+    }
   }catch(e){}
 
   currentRole = userRole;

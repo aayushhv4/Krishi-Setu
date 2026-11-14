@@ -1,4 +1,6 @@
--- KrishiSetu Supabase schema
+-- KrishiSetu Supabase schema (Restoration version)
+-- Derived from 001_schema.sql with auth.users registration trigger omitted
+-- (profile creation is handled post-auth to prevent signup blocking errors).
 -- Run this once in Supabase Dashboard -> SQL Editor.
 -- Uses Supabase Auth as the source of truth; never store passwords here.
 create extension if not exists pgcrypto;
@@ -112,36 +114,6 @@ create index if not exists idx_saved_schemes_user on public.saved_schemes (user_
 create index if not exists idx_support_tickets_user on public.support_tickets (user_id);
 
 create index if not exists idx_market_price_crop_date on public.market_price_snapshots (crop, observed_at desc);
-
--- Automatically create a profile when Supabase Auth creates a user.
-create or replace function public.handle_new_krishisetu_user () returns trigger language plpgsql security definer
-set
-  search_path = public as $$
-begin
-  insert into public.profiles (id, role, full_name, mobile, profile, tutorial_completed)
-  values (
-    new.id,
-    case when coalesce(new.raw_user_meta_data->>'role','farmer') = 'buyer' then 'buyer' else 'farmer' end,
-    coalesce(new.raw_user_meta_data->>'full_name',''),
-    coalesce(new.raw_user_meta_data->>'mobile',''),
-    coalesce(new.raw_user_meta_data->'profile','{}'::jsonb),
-    false
-  )
-  on conflict (id) do update set
-    role = excluded.role,
-    full_name = excluded.full_name,
-    mobile = excluded.mobile,
-    profile = excluded.profile,
-    updated_at = now();
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created_krishisetu on auth.users;
-
-create trigger on_auth_user_created_krishisetu
-after insert on auth.users for each row
-execute procedure public.handle_new_krishisetu_user ();
 
 -- Keep updated_at current.
 create or replace function public.set_krishisetu_updated_at () returns trigger language plpgsql as $$
@@ -331,3 +303,4 @@ delete on public.support_tickets to authenticated;
 grant
 select
   on public.market_price_snapshots to authenticated;
+

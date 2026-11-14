@@ -1,6 +1,8 @@
 -- ============================================================================
--- KRISHISETU: ADMIN & SUPERVISOR GOVERNANCE SCHEMA
+-- KRISHISETU: ADMIN & SUPERVISOR GOVERNANCE SCHEMA (Restoration version)
 -- Compatible with Supabase PostgreSQL & Row Level Security (RLS)
+-- Derived from 002_admin_governance.sql with demo auth user seeds omitted
+-- (real supervisors/admins are assigned roles via verified auth.users IDs).
 -- ============================================================================
 
 -- 1. EXTENSIONS
@@ -228,55 +230,48 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- RLS: Supervisors and Admins can read all governance tables
+DROP POLICY IF EXISTS "Supervisors and Admins can view audit logs" ON public.audit_logs;
 CREATE POLICY "Supervisors and Admins can view audit logs"
 ON public.audit_logs FOR SELECT
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Supervisors and Admins can view alerts" ON public.alerts;
 CREATE POLICY "Supervisors and Admins can view alerts"
 ON public.alerts FOR SELECT
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Supervisors and Admins can update alerts" ON public.alerts;
 CREATE POLICY "Supervisors and Admins can update alerts"
 ON public.alerts FOR UPDATE
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Supervisors and Admins can view investigations" ON public.investigation_cases;
 CREATE POLICY "Supervisors and Admins can view investigations"
 ON public.investigation_cases FOR SELECT
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Supervisors and Admins can modify investigations" ON public.investigation_cases;
 CREATE POLICY "Supervisors and Admins can modify investigations"
 ON public.investigation_cases FOR ALL
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Admins can modify risk rules" ON public.risk_rules;
 CREATE POLICY "Admins can modify risk rules"
 ON public.risk_rules FOR ALL
 USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Supervisors can view risk rules" ON public.risk_rules;
 CREATE POLICY "Supervisors can view risk rules"
 ON public.risk_rules FOR SELECT
 USING (public.is_supervisor_or_admin());
 
+DROP POLICY IF EXISTS "Admins can modify admin settings" ON public.admin_settings;
 CREATE POLICY "Admins can modify admin settings"
 ON public.admin_settings FOR ALL
 USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Supervisors can view admin settings" ON public.admin_settings;
 CREATE POLICY "Supervisors can view admin settings"
 ON public.admin_settings FOR SELECT
 USING (public.is_supervisor_or_admin());
 
--- 12. DEMO SEED SUPERVISORS & ADMIN
-INSERT INTO auth.users (
-    id, email, created_at, updated_at, confirmation_sent_at,
-    raw_app_meta_data, raw_user_meta_data, is_super_admin, encrypted_password, role, aud
-)
-VALUES
-('88888888-8888-8888-8888-888888888888', 'supervisor@krishisetu.gov.in.demo', NOW(), NOW(), NOW(),
- '{"provider":"email"}'::jsonb, '{"full_name":"Pooja Kulkarni (Supervisor)", "role":"supervisor"}'::jsonb,
- false, '', 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.supervisor_roles (id, user_id, email, full_name, role, department, can_suspend_users, can_modify_rules, can_manage_escrow)
-VALUES
-('a1111111-1111-1111-1111-111111111111', '88888888-8888-8888-8888-888888888888', 'supervisor@krishisetu.gov.in.demo', 'Pooja Kulkarni', 'supervisor', 'Field Audits & Compliance', false, false, false),
-('b2222222-2222-2222-2222-222222222222', '99999999-9999-9999-9999-999999999999', 'admin@krishisetu.gov.in.demo', 'KrishiSetu Chief Administrator', 'admin', 'Marketplace Directorate', true, true, true)
-ON CONFLICT (id) DO NOTHING;
